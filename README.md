@@ -640,6 +640,160 @@ func main() {
     wg.Wait() // Properly wait for all goroutines to complete
 }
 ```
+Got it — here's the properly **consistent continuation** of your Markdown documentation, matching the style and formatting of the snippet you provided:
+
+### WaitGroups
+
+WaitGroups are used to wait for a collection of goroutines to finish executing. This ensures all concurrent tasks complete before moving on.
+
+```go
+type Number interface {
+    ~int | ~float64
+}
+
+func tasks2[T Number](id T, w *sync.WaitGroup) {
+    defer w.Done() // Decrement the WaitGroup counter when the goroutine completes
+    fmt.Printf("Task %v started in a WaitGroup\n", id)
+}
+
+func main() {
+    var wg sync.WaitGroup
+    
+    for i := 0; i < 11; i++ {
+        go tasks(i) // Unsynchronized goroutine
+
+        go func(i int) {
+            fmt.Printf("Task %v ended\n", i)
+        }(i)
+
+        wg.Add(1)
+        go tasks2(i, &wg) // Start goroutine with WaitGroup tracking
+    }
+
+    wg.Wait() // Block until all goroutines call Done()
+    fmt.Println("All tasks started")
+}
+```
+
+Key points:
+
+* `sync.WaitGroup` is a struct used to synchronize goroutines.
+* `wg.Add(1)` increments the counter before starting a goroutine.
+* `defer wg.Done()` decrements the counter when the goroutine finishes.
+* `wg.Wait()` blocks until the counter is zero, meaning all goroutines have completed.
+* The WaitGroup must be passed by reference (`&wg`) so all goroutines share the same counter.
+
+> ✅ Prefer `sync.WaitGroup` over `time.Sleep` for precise and reliable goroutine synchronization.
+
+
+## Concurrency with Channels and WaitGroups in Go
+
+This document illustrates how to use **channels** and **WaitGroups** in Go to manage concurrent tasks efficiently and avoid common pitfalls like deadlocks.
+
+---
+
+### 🔁 Overview
+
+This example covers:
+
+* Creating **unbuffered** and **buffered** channels
+* Launching **goroutines** to process data concurrently
+* Using **sync.WaitGroup** to wait for all tasks to complete
+* **Closing channels** properly to avoid deadlocks
+
+---
+
+### 🔌 Channels: Unbuffered vs Buffered
+
+```go
+numChan1 := make(chan any)        // Unbuffered channel
+numChan2 := make(chan any, 5)     // Buffered channel with capacity 5
+```
+
+* **Unbuffered Channel (`numChan1`)**:
+
+  * Blocks the sender until the receiver reads the value
+  * Risk of deadlock if a value is sent without an active receiver
+
+* **Buffered Channel (`numChan2`)**:
+
+  * Allows multiple values to be sent up to buffer limit without blocking
+  * Useful for temporary storage before processing
+
+---
+
+### ⚙️ WaitGroup for Synchronization
+
+```go
+var wg sync.WaitGroup
+wg.Add(2) // We have 2 goroutines
+```
+
+* `Add(n)` specifies the number of goroutines to wait for
+* Each goroutine calls `defer wg.Done()` when finished
+* `wg.Wait()` blocks the main function until all goroutines complete
+
+---
+
+### 🧵 Goroutines with Channels
+
+```go
+func processNum(numChan chan any, wg *sync.WaitGroup) {
+    defer wg.Done()
+    for num := range numChan {
+        fmt.Println("Processing number:", num)
+    }
+}
+```
+
+This function runs as a goroutine. It reads values from the channel in a loop. The `range` stops when the channel is **closed**.
+
+---
+
+### 🚀 Main Function Execution
+
+```go
+go processNum(numChan1, &wg)
+go processNum2(numChan2, &wg)
+
+numChan1 <- 42
+numChan1 <- 3.14
+numChan2 <- 9.81
+numChan1 <- "Hello"
+numChan2 <- "World"
+numChan1 <- true
+numChan2 <- false
+
+close(numChan1)
+close(numChan2)
+
+wg.Wait()
+```
+
+* Values of different types are sent using `chan any`
+* Channels are **closed** after all values are sent
+* `wg.Wait()` ensures main doesn't exit prematurely
+
+---
+
+### ⚠️ Common Pitfalls
+
+| Issue           | Cause                                               | Solution                                          |
+| --------------- | --------------------------------------------------- | ------------------------------------------------- |
+| Deadlock        | Sending to an unbuffered channel without a receiver | Launch a goroutine first or use buffered channels |
+| Runtime Panic   | Sending to a closed channel                         | Always close after all sends                      |
+| Stuck Goroutine | Not closing channel                                 | Close channels when done sending                  |
+
+---
+
+### ✅ Key Takeaways
+
+* Use **WaitGroup** to manage goroutine completion
+* Close **channels** to avoid blocking consumers
+* Prefer **buffered channels** if producers might outpace consumers
+* `chan any` provides flexibility, but use with care (type assertions may be needed in real applications)
+
+---
 
 ## Setup and Environment
 
