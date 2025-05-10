@@ -795,6 +795,102 @@ wg.Wait()
 
 ---
 
+# Go Concurrency: Mutex to Prevent Race Conditions
+
+## Overview
+
+This example demonstrates how to use a **mutex** (mutual exclusion) in Go to prevent **race conditions** when multiple goroutines access and modify a shared variable (`views`) concurrently.
+
+---
+
+## Code Summary
+
+```go
+package main
+import (
+	"fmt"
+	"sync"
+)
+
+type post struct {
+	views int
+	mu    sync.Mutex
+}
+
+func (p *post) incrementViews(wg *sync.WaitGroup) {
+	defer func() { wg.Done(); p.mu.Unlock() } ()
+	p.mu.Lock()
+	p.views++
+	fmt.Println("Incremented views to:", p.views)
+}
+
+func main() {
+	var wg sync.WaitGroup
+	p := &post{}
+
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go p.incrementViews(&wg)
+	}
+
+	wg.Wait()
+	fmt.Println("Final views:", p.views)
+}
+```
+
+---
+
+## 🔒 Why Use `sync.Mutex`?
+
+* In concurrent Go programs, multiple goroutines can try to read/write to the same variable.
+* This leads to **race conditions**, resulting in unpredictable behavior.
+* `sync.Mutex` ensures that **only one goroutine** accesses the shared resource at a time.
+
+---
+
+## 🧠 Breakdown
+
+| Part                       | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `type post struct`         | Defines a struct with a view counter and a mutex.      |
+| `incrementViews()`         | Locks the mutex, increments views, unlocks after done. |
+| `wg *sync.WaitGroup`       | Ensures the main goroutine waits for all increments.   |
+| `go p.incrementViews(&wg)` | Spawns 100 goroutines to increment the view count.     |
+
+---
+
+## ⚠️ Common Mistake to Avoid
+
+Don't call `Unlock()` without calling `Lock()` first — it leads to a **runtime panic**. This example uses `defer` smartly to ensure `Unlock()` is always called even if the goroutine panics midway.
+
+---
+
+## ✅ Output Example
+
+```
+Incremented views to: 1
+Incremented views to: 2
+...
+Final views: 100
+```
+
+---
+
+## 🧪 Alternative Without Mutex (Don't Do This)
+
+If you remove `p.mu.Lock()` and `p.mu.Unlock()`, the result would be inconsistent due to data races — e.g., final view count may be <100.
+
+---
+
+## 🧰 Tools & Tips
+
+* Use `go run -race` to detect race conditions.
+* Mutex is simple but can become a bottleneck if overused — prefer channels for complex coordination.
+
+---
+
+
+
 ## Setup and Environment
 
 To permanently add Go to your PATH, add these lines to your profile file:
