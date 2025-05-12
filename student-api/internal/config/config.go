@@ -26,10 +26,10 @@ func MustLoad() *Config {
 	configPath = os.Getenv("CONFIG_PATH")
 
 	if configPath == "" {
-		flag := flag.String("config", "", "path to config file")
+		configflag := flag.String("config", "", "path to config file")
 		flag.Parse()
 
-		configPath = *flag
+		configPath = *configflag
 		if configPath == "" {
 			log.Fatal("CONFIG_PATH is required")
 		}
