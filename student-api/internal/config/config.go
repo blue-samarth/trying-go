@@ -5,11 +5,12 @@ import (
 	"os"
 	"log"
 	"flag"
+	
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type HTTPServer struct {
-	Address string
+	Address string `yaml:"address" env:"HTTP_ADDRESS" env-default:"0.0.0.0:8082"`
 }
 
 type Config struct {
