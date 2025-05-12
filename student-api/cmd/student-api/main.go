@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/blue-samarth/trying-go/student-api/internal/config"
 )
@@ -23,13 +25,20 @@ func main(){
 	fmt.Println("Server started on", cfg.HTTPServer.Address)
 	fmt.Println("Server is running...")
 
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
 	server := http.Server {
 		Addr : cfg.HTTPServer.Address,
 		Handler : router,
 	}
 
-	err := server.ListenAndServe()
-	if err != nil { log.Fatalf("Error starting server: %v", err.Error()) }
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil { log.Fatalf("Error starting server: %v", err.Error()) }
+	}()
 
+	<-done 
+	fmt.Println("Shutting down server...")
 
 }
