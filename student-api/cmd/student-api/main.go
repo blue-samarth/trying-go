@@ -6,6 +6,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"log/slog"
+	"syscall"
+	"context"
+	"time"
 
 	"github.com/blue-samarth/trying-go/student-api/internal/config"
 )
@@ -40,5 +44,15 @@ func main(){
 
 	<-done 
 	fmt.Println("Shutting down server...")
+	slog.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+
+	err := server.Shutdown(ctx) // Gracefully shutdown the server but issue here is that sometimes while shutting down the server, it will not shutdown gracefully and will throw an error
+	if err != nil { slog.Error("Error shutting down server", slog.String("error", err.Error())) }
+	fmt.Println("Server stopped")
+
+	slog.Info("Server stopped successfully")
 
 }
