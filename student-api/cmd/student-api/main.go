@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/blue-samarth/trying-go/student-api/internal/config"
+	"github.com/blue-samarth/trying-go/student-api/cmd/http/handlers/student"
 )
 
 func main(){
@@ -22,9 +23,7 @@ func main(){
 		cfg.Env, cfg.Storagepath, cfg.HTTPServer.Address)
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to the Student API!"))
-	})
+	router.HandleFunc("GET /api/students", student.New())
 
 	fmt.Println("Server started on", cfg.HTTPServer.Address)
 	fmt.Println("Server is running...")
