@@ -11,8 +11,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/blue-samarth/trying-go/student-api/internal/config"
-	"github.com/blue-samarth/trying-go/student-api/cmd/http/handlers/student"
+	"github.com/blue-samarth/student-api/internal/config"
+	"github.com/blue-samarth/student-api/cmd/http/handlers/student"
 )
 
 func main(){
