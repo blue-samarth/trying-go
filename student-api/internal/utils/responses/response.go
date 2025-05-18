@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-func JsonResponse(w https.ResponseWriter, status string, statusCode int, data interface{}) error {
+func JsonResponse(w http.ResponseWriter, status string, statusCode int, data interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
