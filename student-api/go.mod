@@ -1,8 +1,10 @@
-module github.com/blue-samarth/trying-go/student-api
+module github.com/blue-samarth/student-api
 
 go 1.24.2
 
 require github.com/ilyakaznacheev/cleanenv v1.5.0
+
+replace github.com/blue-samarth/student-api => .
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
