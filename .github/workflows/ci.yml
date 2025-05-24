@@ -57,7 +57,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./student-api
           push: false
           file: ./student-api/Dockerfile
           build-args: |
